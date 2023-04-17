@@ -43,20 +43,6 @@ contract ReitAfrica is Ownable {
     mapping(uint256 => PurchaseHistory) purchaseHistory;
 
 
-
-    struct PropertySplit {
-        uint256 id;
-        uint256 propertyId;
-        address owner;
-        string metadataUrl;
-        string splitIdentifier;
-        uint64 lastSaleTimestamp;
-        bool onSale;
-    }
-
-    uint256 public minimumPropertyValue;
-
-
     event PropertyAdded(
         uint256 id,
         string name,
