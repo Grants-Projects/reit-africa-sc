@@ -38,9 +38,15 @@ contract ReitAfrica is Ownable {
 
     mapping(uint256 => Property) public properties;
 
+    //maps property to user's address to shares owned
     mapping(uint256 => mapping(address => uint256)) sharesOwned;
 
-    mapping(uint256 => PurchaseHistory) purchaseHistory;
+    //maps propertyId to array of purchase history
+    mapping(uint256 => PurchaseHistory[]) purchaseHistory;
+
+    Property[] public propertyListing;
+
+    Property[] public unApprovedPropertyList;
 
 
     event PropertyAdded(
@@ -53,6 +59,7 @@ contract ReitAfrica is Ownable {
     );
 
     event BuyShare(uint256 propertyId, address buyer, uint256 price, uint256 dateBought, uint256 sharesBought);
+    event ApproveProperty(uint256 id, uint256 updatedTimestamp);
 
     //Only owner can add property this is to prevent anyone to add unverified properties
     //Owner can specify the total share that will be available because if owner keeps spliting the property to make money
@@ -68,7 +75,7 @@ contract ReitAfrica is Ownable {
         _propertyCount.increment();
         uint256 propertyCount = _propertyCount.current();
         uint256 createdDate = block.timestamp;
-        properties[propertyCount] = Property(
+        Property memory property = Property(
             propertyCount,
             _name,
             _metadataUrl,
@@ -80,6 +87,8 @@ contract ReitAfrica is Ownable {
             false,
             createdDate
         );
+        properties[propertyCount] = property;
+        unApprovedPropertyList.push(property);
         emit PropertyAdded(
             propertyCount,
             _name,
@@ -95,6 +104,8 @@ contract ReitAfrica is Ownable {
         Property storage property = properties[_propertyId];
         require(!property.isApproved, "Property has already been approved");
         property.isApproved = true;
+        propertyListing.push(property);
+        emit ApproveProperty(property.propertyId, block.timestamp);
     }
 
 
@@ -113,7 +124,8 @@ contract ReitAfrica is Ownable {
       property.availableShares -= _sharesToBuy;
       sharesOwned[_propertyId][msg.sender]++;
       uint256 currentDate = block.timestamp;
-      purchaseHistory[purchaseHistoryCount] = PurchaseHistory(msg.sender, _propertyId, _sharesToBuy, currentDate, property.price);
+      PurchaseHistory memory _purchaseHistory = PurchaseHistory(msg.sender, _propertyId, _sharesToBuy, currentDate, property.price);
+      purchaseHistory[purchaseHistoryCount].push(_purchaseHistory);
       emit BuyShare(_propertyId, msg.sender, property.price, currentDate, _sharesToBuy);
     }
 

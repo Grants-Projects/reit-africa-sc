@@ -4,23 +4,22 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
-const hre = require("hardhat");
+require("dotenv").config();
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  const [deployer] = await ethers.getSigners()
+  console.log("deployer", deployer)
+  console.log('Deploying contracts with the account:', deployer.address)
+  console.log('Account balance:', (await deployer.getBalance()).toString())
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  //Deploy ReitAfrica
+  const ReitAfrica = await ethers.getContractFactory('ReitAfrica');
+  const reitAfricaContract = await ReitAfrica.deploy();
 
-  await lock.deployed();
+  console.log("address for reit africa", reitAfricaContract.address)
 
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
